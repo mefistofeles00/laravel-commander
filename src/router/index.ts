@@ -21,11 +21,6 @@ export const router = createRouter({
       path: '/projects/:id/artisan',
       name: 'artisan-panel',
       component: () => import('@/pages/ArtisanPanel.vue')
-    },
-    {
-      path: '/output',
-      name: 'output-terminal',
-      component: () => import('@/pages/OutputTerminal.vue')
     }
   ]
 })

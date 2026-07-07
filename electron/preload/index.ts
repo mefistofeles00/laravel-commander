@@ -1,5 +1,12 @@
-import { contextBridge, ipcRenderer } from 'electron'
-import type { IpcChannel, IpcArgs, IpcResult, LaravelCommanderApi } from '@shared/types'
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import type {
+  IpcChannel,
+  IpcArgs,
+  IpcResult,
+  IpcEvent,
+  IpcEventPayload,
+  LaravelCommanderApi
+} from '@shared/types'
 
 // The only place ipcRenderer is touched. The renderer never sees raw
 // channel strings — only the named methods below, which acts as the
@@ -8,13 +15,32 @@ function invoke<C extends IpcChannel>(channel: C, ...args: IpcArgs<C>): Promise<
   return ipcRenderer.invoke(channel, ...args)
 }
 
+function subscribe<E extends IpcEvent>(
+  channel: E,
+  callback: (payload: IpcEventPayload<E>) => void
+): () => void {
+  const listener = (_event: IpcRendererEvent, payload: IpcEventPayload<E>): void =>
+    callback(payload)
+  ipcRenderer.on(channel, listener)
+  return () => ipcRenderer.removeListener(channel, listener)
+}
+
 const api: LaravelCommanderApi = {
   ping: (message) => invoke('app:ping', message),
   detectPhp: () => invoke('php:detect'),
   listProjects: () => invoke('projects:list'),
   addProject: () => invoke('projects:add'),
   removeProject: (projectId) => invoke('projects:remove', projectId),
-  revealProject: (projectId) => invoke('projects:reveal', projectId)
+  revealProject: (projectId) => invoke('projects:reveal', projectId),
+  readEnv: (projectId) => invoke('env:read', projectId),
+  writeEnv: (projectId, changes) => invoke('env:write', projectId, changes),
+  initEnv: (projectId) => invoke('env:init', projectId),
+  listArtisanCommands: (projectId) => invoke('artisan:list', projectId),
+  runArtisan: (projectId, command, cliArgs, options) =>
+    invoke('artisan:run', projectId, command, cliArgs, options),
+  cancelArtisan: (runId) => invoke('artisan:cancel', runId),
+  onCommandOutput: (callback) => subscribe('command:output', callback),
+  onCommandExit: (callback) => subscribe('command:exit', callback)
 }
 
 contextBridge.exposeInMainWorld('api', api)

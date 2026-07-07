@@ -2,10 +2,10 @@
  * IPC contract between main and renderer.
  *
  * This file is the single source of truth: every channel is declared in
- * `IpcChannels`, the preload script exposes it as a named method on
- * `LaravelCommanderApi`, and the main process registers a handler for it
- * via the typed `handle()` helper. Adding a channel here type-errors
- * until both sides implement it.
+ * `IpcChannels` (invoke/handle) or `IpcEvents` (main -> renderer push),
+ * the preload script exposes them as named methods on `LaravelCommanderApi`,
+ * and the main process registers handlers via the typed `handle()` helper.
+ * Adding a channel here type-errors until both sides implement it.
  */
 
 // ---- Payload types ----
@@ -42,7 +42,54 @@ export interface PhpInfo {
   source: PhpSource
 }
 
-// Command streaming payloads (wired to the renderer in Phase 2).
+// ---- .env editing ----
+
+export interface EnvEntry {
+  key: string
+  value: string
+}
+
+export interface EnvFileState {
+  /** .env exists in the project root. */
+  exists: boolean
+  /** .env.example exists in the project root. */
+  exampleExists: boolean
+  entries: EnvEntry[]
+  /** Keys present in .env.example but missing from .env. */
+  missingKeys: string[]
+  /** Keys present in .env but not in .env.example. */
+  extraKeys: string[]
+}
+
+// ---- Artisan ----
+
+export interface ArtisanArgument {
+  name: string
+  description: string
+  isRequired: boolean
+}
+
+export interface ArtisanOption {
+  name: string
+  description: string
+  acceptValue: boolean
+}
+
+export interface ArtisanCommand {
+  name: string
+  description: string
+  arguments: ArtisanArgument[]
+  options: ArtisanOption[]
+}
+
+export type ArtisanCatalogResult =
+  { ok: true; commands: ArtisanCommand[] } | { ok: false; message: string }
+
+export type ArtisanRunResult = { ok: true; runId: string } | { ok: false; message: string }
+
+/** Option values keyed by option name (without leading dashes); `true` for flags. */
+export type ArtisanOptionValues = Record<string, string | true>
+
 export interface CommandOutputEvent {
   runId: string
   stream: 'stdout' | 'stderr'
@@ -64,12 +111,33 @@ export interface IpcChannels {
   'projects:add': { args: []; result: AddProjectResult }
   'projects:remove': { args: [projectId: string]; result: LaravelProject[] }
   'projects:reveal': { args: [projectId: string]; result: boolean }
-  // Phase 2: 'artisan:list', 'artisan:run', 'artisan:cancel', 'env:read', 'env:write'
+  'env:read': { args: [projectId: string]; result: EnvFileState }
+  'env:write': {
+    args: [projectId: string, changes: Record<string, string>]
+    result: EnvFileState
+  }
+  'env:init': { args: [projectId: string]; result: EnvFileState }
+  'artisan:list': { args: [projectId: string]; result: ArtisanCatalogResult }
+  'artisan:run': {
+    args: [projectId: string, command: string, cliArgs: string[], options: ArtisanOptionValues]
+    result: ArtisanRunResult
+  }
+  'artisan:cancel': { args: [runId: string]; result: boolean }
 }
 
 export type IpcChannel = keyof IpcChannels
 export type IpcArgs<C extends IpcChannel> = IpcChannels[C]['args']
 export type IpcResult<C extends IpcChannel> = IpcChannels[C]['result']
+
+// ---- Event map: main -> renderer push channels ----
+
+export interface IpcEvents {
+  'command:output': CommandOutputEvent
+  'command:exit': CommandExitEvent
+}
+
+export type IpcEvent = keyof IpcEvents
+export type IpcEventPayload<E extends IpcEvent> = IpcEvents[E]
 
 // ---- Renderer-facing API surface (implemented by preload) ----
 
@@ -80,4 +148,18 @@ export interface LaravelCommanderApi {
   addProject(): Promise<AddProjectResult>
   removeProject(projectId: string): Promise<LaravelProject[]>
   revealProject(projectId: string): Promise<boolean>
+  readEnv(projectId: string): Promise<EnvFileState>
+  writeEnv(projectId: string, changes: Record<string, string>): Promise<EnvFileState>
+  initEnv(projectId: string): Promise<EnvFileState>
+  listArtisanCommands(projectId: string): Promise<ArtisanCatalogResult>
+  runArtisan(
+    projectId: string,
+    command: string,
+    cliArgs: string[],
+    options: ArtisanOptionValues
+  ): Promise<ArtisanRunResult>
+  cancelArtisan(runId: string): Promise<boolean>
+  /** Subscribe to live command output. Returns an unsubscribe function. */
+  onCommandOutput(callback: (event: CommandOutputEvent) => void): () => void
+  onCommandExit(callback: (event: CommandExitEvent) => void): () => void
 }

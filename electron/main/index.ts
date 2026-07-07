@@ -10,11 +10,13 @@ import { registerEnvIpc } from './ipc/env'
 import { ProjectManager } from './services/ProjectManager'
 import { PhpEnvironment } from './services/PhpEnvironment'
 import { CommandRunner } from './services/CommandRunner'
+import { EnvFileService } from './services/EnvFileService'
 import { store } from './services/storage'
 
 const projectManager = new ProjectManager()
 const phpEnvironment = new PhpEnvironment(() => store.get('phpPathOverride'))
 const commandRunner = new CommandRunner()
+const envFileService = new EnvFileService()
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -67,8 +69,8 @@ app.whenReady().then(() => {
   registerAppIpc()
   registerProjectsIpc(projectManager)
   registerPhpIpc(phpEnvironment)
-  registerArtisanIpc(commandRunner)
-  registerEnvIpc()
+  registerArtisanIpc(projectManager, phpEnvironment, commandRunner)
+  registerEnvIpc(projectManager, envFileService)
 
   createWindow()
 
