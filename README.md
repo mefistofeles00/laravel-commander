@@ -29,12 +29,12 @@ API and the main-process handler implement it.
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `pnpm dev` | Run in development with HMR |
+| Command          | Description                              |
+| ---------------- | ---------------------------------------- |
+| `pnpm dev`       | Run in development with HMR              |
 | `pnpm typecheck` | Typecheck main (node) and renderer (web) |
-| `pnpm build` | Typecheck + production build |
-| `pnpm lint` | ESLint |
+| `pnpm build`     | Typecheck + production build             |
+| `pnpm lint`      | ESLint                                   |
 
 ## License
 

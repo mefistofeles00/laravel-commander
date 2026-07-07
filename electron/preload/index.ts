@@ -9,7 +9,12 @@ function invoke<C extends IpcChannel>(channel: C, ...args: IpcArgs<C>): Promise<
 }
 
 const api: LaravelCommanderApi = {
-  ping: (message) => invoke('app:ping', message)
+  ping: (message) => invoke('app:ping', message),
+  detectPhp: () => invoke('php:detect'),
+  listProjects: () => invoke('projects:list'),
+  addProject: () => invoke('projects:add'),
+  removeProject: (projectId) => invoke('projects:remove', projectId),
+  revealProject: (projectId) => invoke('projects:reveal', projectId)
 }
 
 contextBridge.exposeInMainWorld('api', api)

@@ -1,10 +1,10 @@
 <script setup lang="ts"></script>
 
 <template>
-  <section class="p-6">
-    <h1 class="text-2xl font-semibold">Artisan</h1>
+  <section class="mx-auto max-w-3xl px-8 pt-5">
+    <h1 class="text-xl font-semibold tracking-tight">Artisan</h1>
     <p class="mt-2 text-sm text-muted-foreground">
-      TODO Phase 2: command catalog from `artisan list --format=json`, dynamic forms.
+      Coming in Phase 2: command catalog from `artisan list --format=json` and dynamic forms.
     </p>
   </section>
 </template>

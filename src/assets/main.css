@@ -1,51 +1,37 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import '@fontsource-variable/hanken-grotesk';
+@import '@fontsource-variable/jetbrains-mono';
 
-@custom-variant dark (&:is(.dark *));
-
+/*
+ * Laravel Commander — committed dark theme.
+ * Warm charcoal surfaces (desktop tool, not a website), Laravel flame
+ * (#FF2D20 territory) as the single accent, monospace as identity for
+ * paths, versions and commands.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: oklch(0.168 0.008 40);
+  --foreground: oklch(0.94 0.01 75);
+  --card: oklch(0.205 0.01 40);
+  --card-foreground: oklch(0.94 0.01 75);
+  --popover: oklch(0.21 0.01 40);
+  --popover-foreground: oklch(0.94 0.01 75);
+  --primary: oklch(0.63 0.207 30);
+  --primary-foreground: oklch(0.98 0.01 75);
+  --secondary: oklch(0.26 0.012 40);
+  --secondary-foreground: oklch(0.94 0.01 75);
+  --muted: oklch(0.24 0.01 40);
+  --muted-foreground: oklch(0.67 0.015 55);
+  --accent: oklch(0.26 0.012 40);
+  --accent-foreground: oklch(0.94 0.01 75);
+  --destructive: oklch(0.6 0.2 25);
+  --destructive-foreground: oklch(0.98 0.01 75);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 13%);
+  --ring: oklch(0.63 0.207 30 / 55%);
+  --success: oklch(0.74 0.14 150);
+  --warning: oklch(0.8 0.14 85);
+  --radius: 0.5rem;
 }
 
 @theme inline {
@@ -68,17 +54,53 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-sans:
+    'Hanken Grotesk Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+/* Electron window chrome */
+@utility app-drag {
+  -webkit-app-region: drag;
+}
+@utility app-no-drag {
+  -webkit-app-region: no-drag;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    color-scheme: dark;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
+    user-select: none;
+    overscroll-behavior: none;
+  }
+  ::selection {
+    background: oklch(0.63 0.207 30 / 30%);
+  }
+}
+
+/* Blinking prompt cursor for the empty state. */
+.prompt-caret {
+  animation: prompt-caret 1.2s steps(2, jump-none) infinite;
+}
+@keyframes prompt-caret {
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .prompt-caret {
+    animation: none;
   }
 }

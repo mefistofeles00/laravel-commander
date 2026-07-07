@@ -1,10 +1,10 @@
 <script setup lang="ts"></script>
 
 <template>
-  <section class="p-6">
-    <h1 class="text-2xl font-semibold">.env Editor</h1>
+  <section class="mx-auto max-w-3xl px-8 pt-5">
+    <h1 class="text-xl font-semibold tracking-tight">.env editor</h1>
     <p class="mt-2 text-sm text-muted-foreground">
-      TODO Phase 2: order/comment preserving editor, .env.example diff.
+      Coming in Phase 2: order/comment preserving editing and .env.example diff.
     </p>
   </section>
 </template>

@@ -4,15 +4,28 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerAppIpc } from './ipc/app'
 import { registerProjectsIpc } from './ipc/projects'
+import { registerPhpIpc } from './ipc/php'
 import { registerArtisanIpc } from './ipc/artisan'
 import { registerEnvIpc } from './ipc/env'
+import { ProjectManager } from './services/ProjectManager'
+import { PhpEnvironment } from './services/PhpEnvironment'
+import { CommandRunner } from './services/CommandRunner'
+import { store } from './services/storage'
+
+const projectManager = new ProjectManager()
+const phpEnvironment = new PhpEnvironment(() => store.get('phpPathOverride'))
+const commandRunner = new CommandRunner()
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 720,
+    width: 1200,
+    height: 760,
+    minWidth: 900,
+    minHeight: 600,
     show: false,
     autoHideMenuBar: true,
+    backgroundColor: '#1b1815',
+    ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset' as const } : {}),
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -52,8 +65,9 @@ app.whenReady().then(() => {
   })
 
   registerAppIpc()
-  registerProjectsIpc()
-  registerArtisanIpc()
+  registerProjectsIpc(projectManager)
+  registerPhpIpc(phpEnvironment)
+  registerArtisanIpc(commandRunner)
   registerEnvIpc()
 
   createWindow()
@@ -63,6 +77,11 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+})
+
+// No artisan/composer process may outlive the app.
+app.on('before-quit', () => {
+  commandRunner.killAll()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

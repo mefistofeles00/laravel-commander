@@ -6,6 +6,7 @@ export function registerAppIpc(): void {
     message: `pong: ${message}`,
     appVersion: app.getVersion(),
     electronVersion: process.versions.electron,
-    nodeVersion: process.versions.node
+    nodeVersion: process.versions.node,
+    platform: process.platform
   }))
 }
