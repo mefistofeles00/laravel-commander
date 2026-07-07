@@ -58,7 +58,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId('dev.laravel-commander')
+  electronApp.setAppUserModelId('dev.laravelcommander.app')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

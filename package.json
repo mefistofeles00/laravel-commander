@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Desktop app for managing Laravel projects: .env editing and artisan commands without the terminal",
   "license": "MIT",
+  "packageManager": "pnpm@11.10.0",
   "main": "./out/main/index.js",
   "author": "Laravel Commander contributors",
   "scripts": {

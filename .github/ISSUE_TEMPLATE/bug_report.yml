@@ -1,0 +1,35 @@
+name: Bug report
+description: Something doesn't work the way it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: macOS 15.2 / Windows 11 / Ubuntu 24.04
+    validations:
+      required: true
+  - type: input
+    id: php
+    attributes:
+      label: PHP setup
+      description: Shown in the bottom-left of the sidebar, e.g. "PHP 8.4.10 · herd"
+      placeholder: PHP 8.4.10 · herd
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      placeholder: v0.1.0
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal output / errors
+      description: Paste any relevant output. This is rendered as code automatically.
+      render: shell

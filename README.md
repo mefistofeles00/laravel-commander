@@ -5,6 +5,8 @@
 An open-source desktop app for managing Laravel projects: add a project, edit
 its `.env`, and run artisan commands — without touching the terminal.
 
+![Projects](docs/screenshots/projects.png)
+
 ## Features
 
 - **Projects** — add a Laravel folder (validated: `artisan` + `laravel/framework`),
@@ -17,9 +19,28 @@ its `.env`, and run artisan commands — without touching the terminal.
   actions, live ANSI-colored output with cancel support
 - **PHP detection** — Herd, Homebrew, XAMPP and PATH fallback chain
 
+| .env editor                                     | Artisan panel                            |
+| ----------------------------------------------- | ---------------------------------------- |
+| ![.env editor](docs/screenshots/env-editor.png) | ![Artisan](docs/screenshots/artisan.png) |
+
 Built with Electron, Vue 3, TypeScript, Tailwind CSS and shadcn-vue.
 
+## Install
+
+Download the latest build for your platform from
+[Releases](../../releases).
+
+> **macOS note:** builds are not yet signed or notarized (that needs an Apple
+> Developer account). Gatekeeper will block the first launch — clear the
+> quarantine flag once:
+>
+> ```bash
+> xattr -cr "/Applications/Laravel Commander.app"
+> ```
+
 ## Development
+
+You need Node.js 22+ and [pnpm](https://pnpm.io).
 
 ```bash
 pnpm install
@@ -47,6 +68,11 @@ API and the main-process handler implement it.
 | `pnpm typecheck` | Typecheck main (node) and renderer (web) |
 | `pnpm build`     | Typecheck + production build             |
 | `pnpm lint`      | ESLint                                   |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) — it includes a 60-second architecture
+tour and the exact steps for adding a new IPC channel.
 
 ## License
 
