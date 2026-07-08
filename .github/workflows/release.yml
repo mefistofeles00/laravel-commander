@@ -34,10 +34,11 @@ jobs:
 
       # electron-builder publishes to the GitHub release for this tag
       # (publish.provider: github in electron-builder.yml). macOS builds are
-      # unsigned unless CSC_LINK / CSC_KEY_PASSWORD secrets are configured —
-      # electron-builder skips signing when they're absent.
+      # unsigned for now — an empty CSC_LINK env var makes electron-builder
+      # fail, so add these lines back only once the signing secrets exist:
+      #   CSC_LINK: ${{ secrets.CSC_LINK }}
+      #   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
       - run: pnpm ${{ matrix.command }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
