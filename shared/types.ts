@@ -102,6 +102,32 @@ export interface CommandExitEvent {
   signal: string | null
 }
 
+// ---- Project Doctor ----
+
+export type DoctorSeverity = 'error' | 'warning' | 'info'
+
+export interface DoctorFinding {
+  /** Stable check id; the main process derives the fix action from it. */
+  id: string
+  title: string
+  detail: string
+  severity: DoctorSeverity
+  /** Button label of the one-click fix, if this finding has one. */
+  fixLabel?: string
+}
+
+export interface DoctorReport {
+  ranAt: number
+  /** Checks that were applicable and evaluated (passed + findings). */
+  checkCount: number
+  findings: DoctorFinding[]
+}
+
+export interface DoctorFixResult {
+  ok: boolean
+  output: string
+}
+
 // ---- Channel map: channel name -> request tuple + response ----
 
 export interface IpcChannels {
@@ -123,6 +149,8 @@ export interface IpcChannels {
     result: ArtisanRunResult
   }
   'artisan:cancel': { args: [runId: string]; result: boolean }
+  'doctor:run': { args: [projectId: string]; result: DoctorReport }
+  'doctor:fix': { args: [projectId: string, findingId: string]; result: DoctorFixResult }
 }
 
 export type IpcChannel = keyof IpcChannels
@@ -159,6 +187,8 @@ export interface LaravelCommanderApi {
     options: ArtisanOptionValues
   ): Promise<ArtisanRunResult>
   cancelArtisan(runId: string): Promise<boolean>
+  runDoctor(projectId: string): Promise<DoctorReport>
+  fixDoctorFinding(projectId: string, findingId: string): Promise<DoctorFixResult>
   /** Subscribe to live command output. Returns an unsubscribe function. */
   onCommandOutput(callback: (event: CommandOutputEvent) => void): () => void
   onCommandExit(callback: (event: CommandExitEvent) => void): () => void

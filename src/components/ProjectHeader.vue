@@ -9,7 +9,8 @@ const route = useRoute()
 const tabs = computed(() => [
   { label: 'Overview', to: `/projects/${props.project.id}`, mono: false },
   { label: '.env', to: `/projects/${props.project.id}/env`, mono: true },
-  { label: 'Artisan', to: `/projects/${props.project.id}/artisan`, mono: false }
+  { label: 'Artisan', to: `/projects/${props.project.id}/artisan`, mono: false },
+  { label: 'Doctor', to: `/projects/${props.project.id}/doctor`, mono: false }
 ])
 
 function reveal(): void {

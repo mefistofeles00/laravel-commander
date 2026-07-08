@@ -21,6 +21,11 @@ export const router = createRouter({
       path: '/projects/:id/artisan',
       name: 'artisan-panel',
       component: () => import('@/pages/ArtisanPanel.vue')
+    },
+    {
+      path: '/projects/:id/doctor',
+      name: 'doctor-panel',
+      component: () => import('@/pages/DoctorPanel.vue')
     }
   ]
 })

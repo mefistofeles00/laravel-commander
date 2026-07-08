@@ -18,6 +18,10 @@ its `.env`, and run artisan commands — without touching the terminal.
   forms generated from each command's arguments and options, one-click quick
   actions, live ANSI-colored output with cancel support
 - **PHP detection** — Herd, Homebrew, XAMPP and PATH fallback chain
+- **Project Doctor** — 12 read-only consistency checks (PHP version vs
+  composer constraint, empty APP_KEY, debug-on-in-production, stale config
+  cache, broken storage link, missing SQLite file, pending migrations, …)
+  with one-click fixes that never run without your say-so
 
 | .env editor                                     | Artisan panel                            |
 | ----------------------------------------------- | ---------------------------------------- |

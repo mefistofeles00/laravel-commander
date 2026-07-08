@@ -39,6 +39,8 @@ const api: LaravelCommanderApi = {
   runArtisan: (projectId, command, cliArgs, options) =>
     invoke('artisan:run', projectId, command, cliArgs, options),
   cancelArtisan: (runId) => invoke('artisan:cancel', runId),
+  runDoctor: (projectId) => invoke('doctor:run', projectId),
+  fixDoctorFinding: (projectId, findingId) => invoke('doctor:fix', projectId, findingId),
   onCommandOutput: (callback) => subscribe('command:output', callback),
   onCommandExit: (callback) => subscribe('command:exit', callback)
 }
