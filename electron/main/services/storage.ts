@@ -1,7 +1,5 @@
 import Store from 'electron-store'
-import type { LaravelProject } from '@shared/types'
-
-export type EditorChoice = 'vscode' | 'phpstorm' | 'cursor'
+import type { ArtisanHistoryEntry, EditorChoice, LaravelProject } from '@shared/types'
 
 interface StoreSchema {
   projects: LaravelProject[]
@@ -9,6 +7,8 @@ interface StoreSchema {
   phpPathOverride?: string
   /** Preferred editor for "open in editor" actions. */
   editor?: EditorChoice
+  /** Recent artisan runs per project id (newest first, capped). */
+  artisanHistory?: Record<string, ArtisanHistoryEntry[]>
 }
 
 export const store = new Store<StoreSchema>({

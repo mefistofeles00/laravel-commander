@@ -2,6 +2,7 @@ import { execFile } from 'child_process'
 import { promisify } from 'util'
 import { randomUUID } from 'crypto'
 import { handle, sendEvent } from './registry'
+import { store } from '../services/storage'
 import type { CommandRunner } from '../services/CommandRunner'
 import type { PhpEnvironment } from '../services/PhpEnvironment'
 import type { ProjectManager } from '../services/ProjectManager'
@@ -135,7 +136,23 @@ export function registerArtisanIpc(
       const detail = error instanceof Error ? error.message : String(error)
       return { ok: false as const, message: detail }
     }
+
+    // Remember the run for the "Recent" chips (newest first, capped at 20).
+    const history = store.get('artisanHistory') ?? {}
+    const entries = (history[projectId] ?? []).filter(
+      (e) =>
+        e.command !== command ||
+        JSON.stringify(e.cliArgs) !== JSON.stringify(cliArgs) ||
+        JSON.stringify(e.options) !== JSON.stringify(options)
+    )
+    entries.unshift({ command, cliArgs, options, at: Date.now() })
+    store.set('artisanHistory', { ...history, [projectId]: entries.slice(0, 20) })
+
     return { ok: true as const, runId }
+  })
+
+  handle('artisan:history', (_event, projectId) => {
+    return (store.get('artisanHistory') ?? {})[projectId] ?? []
   })
 
   handle('artisan:cancel', (_event, runId) => runner.cancel(runId))

@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import ProjectHeader from '@/components/ProjectHeader.vue'
 import TerminalView from '@/components/TerminalView.vue'
+import MakeDialog from '@/components/MakeDialog.vue'
 import { useAppStore } from '@/stores/app'
 import { useProjectsStore } from '@/stores/projects'
-import type { ArtisanCommand } from '@shared/types'
+import type { ArtisanCommand, ArtisanHistoryEntry, ArtisanOptionValues } from '@shared/types'
 
 const QUICK_ACTIONS = ['cache:clear', 'config:clear', 'route:clear', 'migrate', 'storage:link']
 
@@ -35,6 +36,9 @@ const hasOutput = ref(false)
 
 const terminal = ref<InstanceType<typeof TerminalView>>()
 const terminalSection = ref<HTMLDivElement>()
+
+const history = ref<ArtisanHistoryEntry[]>([])
+const makeOpen = ref(false)
 
 const quickActions = computed(() =>
   QUICK_ACTIONS.filter((name) => catalog.value?.some((c) => c.name === name))
@@ -77,37 +81,63 @@ async function loadCatalog(): Promise<void> {
   else catalogError.value = result.message
 }
 
-async function run(command?: ArtisanCommand): Promise<void> {
-  const target = command ?? selected.value
-  if (!project.value || !target || running.value) return
-
-  const cliArgs = target.arguments
-    .map((arg) => (argValues.value[arg.name] ?? '').trim())
-    .filter((value) => value !== '')
-  const options: Record<string, string | true> = {}
-  for (const option of target.options) {
-    const value = optionValues.value[option.name]
-    if (value === true) options[option.name] = true
-    else if (typeof value === 'string' && value.trim() !== '') options[option.name] = value.trim()
-  }
-
+async function execute(
+  name: string,
+  cliArgs: string[],
+  options: ArtisanOptionValues
+): Promise<void> {
+  if (!project.value || running.value) return
   exitInfo.value = null
   runError.value = null
   hasOutput.value = true
   await nextTick()
   terminalSection.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   terminal.value?.clear()
-  terminal.value?.write(
-    `\x1b[90m❯ php artisan ${[target.name, ...cliArgs].join(' ')}\x1b[0m\r\n\r\n`
-  )
+  terminal.value?.write(`\x1b[90m❯ php artisan ${[name, ...cliArgs].join(' ')}\x1b[0m\r\n\r\n`)
 
-  const result = await window.api.runArtisan(project.value.id, target.name, cliArgs, options)
+  const result = await window.api.runArtisan(project.value.id, name, cliArgs, options)
   if (!result.ok) {
     runError.value = result.message
     return
   }
   currentRunId.value = result.runId
   running.value = true
+  loadHistory()
+}
+
+async function run(command?: ArtisanCommand): Promise<void> {
+  const target = command ?? selected.value
+  if (!target) return
+
+  const cliArgs = target.arguments
+    .map((arg) => (argValues.value[arg.name] ?? '').trim())
+    .filter((value) => value !== '')
+  const options: ArtisanOptionValues = {}
+  for (const option of target.options) {
+    const value = optionValues.value[option.name]
+    if (value === true) options[option.name] = true
+    else if (typeof value === 'string' && value.trim() !== '') options[option.name] = value.trim()
+  }
+
+  await execute(target.name, cliArgs, options)
+}
+
+async function loadHistory(): Promise<void> {
+  if (!project.value) return
+  history.value = await window.api.artisanHistory(project.value.id)
+}
+
+function historyLabel(entry: ArtisanHistoryEntry): string {
+  const optionTokens = Object.entries(entry.options).map(([key, value]) =>
+    value === true ? `--${key}` : `--${key}=${value}`
+  )
+  return [entry.command, ...entry.cliArgs, ...optionTokens].join(' ')
+}
+
+function rerun(entry: ArtisanHistoryEntry): void {
+  const command = catalog.value?.find((c) => c.name === entry.command)
+  if (command) select(command)
+  execute(entry.command, entry.cliArgs, entry.options)
 }
 
 function quickRun(name: string): void {
@@ -125,6 +155,7 @@ const unsubscribe: Array<() => void> = []
 
 onMounted(() => {
   loadCatalog()
+  loadHistory()
   unsubscribe.push(
     window.api.onCommandOutput((event) => {
       if (event.runId === currentRunId.value) terminal.value?.write(event.chunk)
@@ -177,17 +208,39 @@ onBeforeUnmount(() => unsubscribe.forEach((off) => off()))
 
       <template v-else-if="catalog">
         <!-- One-click favorites -->
-        <div v-if="quickActions.length" class="mt-6">
-          <h2 class="text-sm font-medium text-muted-foreground">Quick actions</h2>
+        <div class="mt-6 flex items-start justify-between gap-4">
+          <div v-if="quickActions.length">
+            <h2 class="text-sm font-medium text-muted-foreground">Quick actions</h2>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <button
+                v-for="name in quickActions"
+                :key="name"
+                class="rounded-md border bg-card px-3 py-1.5 font-mono text-xs transition-colors hover:border-primary/40 disabled:opacity-50"
+                :disabled="running"
+                @click="quickRun(name)"
+              >
+                ❯ {{ name }}
+              </button>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" class="shrink-0" @click="makeOpen = true">
+            New…
+          </Button>
+        </div>
+
+        <!-- Recent runs -->
+        <div v-if="history.length" class="mt-4">
+          <h2 class="text-sm font-medium text-muted-foreground">Recent</h2>
           <div class="mt-2 flex flex-wrap gap-2">
             <button
-              v-for="name in quickActions"
-              :key="name"
-              class="rounded-md border bg-card px-3 py-1.5 font-mono text-xs transition-colors hover:border-primary/40 disabled:opacity-50"
+              v-for="entry in history.slice(0, 8)"
+              :key="`${entry.command}-${entry.at}`"
+              class="max-w-72 truncate rounded-md border border-dashed px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
               :disabled="running"
-              @click="quickRun(name)"
+              :title="`Run again: php artisan ${historyLabel(entry)}`"
+              @click="rerun(entry)"
             >
-              ❯ {{ name }}
+              ↻ {{ historyLabel(entry) }}
             </button>
           </div>
         </div>
@@ -348,4 +401,10 @@ onBeforeUnmount(() => unsubscribe.forEach((off) => off()))
     </RouterLink>
     <p class="mt-4 text-sm text-muted-foreground">This project is no longer in your list.</p>
   </section>
+
+  <MakeDialog
+    :open="makeOpen"
+    @close="makeOpen = false"
+    @create="(command, cliArgs, options) => execute(command, cliArgs, options)"
+  />
 </template>

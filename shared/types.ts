@@ -90,6 +90,17 @@ export type ArtisanRunResult = { ok: true; runId: string } | { ok: false; messag
 /** Option values keyed by option name (without leading dashes); `true` for flags. */
 export type ArtisanOptionValues = Record<string, string | true>
 
+export interface ArtisanHistoryEntry {
+  command: string
+  cliArgs: string[]
+  options: ArtisanOptionValues
+  at: number
+}
+
+export type EditorChoice = 'vscode' | 'phpstorm' | 'cursor'
+
+export type OpenTarget = 'editor' | 'terminal' | 'browser'
+
 export interface CommandOutputEvent {
   runId: string
   stream: 'stdout' | 'stderr'
@@ -294,6 +305,10 @@ export interface IpcChannels {
   'code:routes': { args: [projectId: string]; result: RoutesResult }
   'code:models': { args: [projectId: string]; result: ModelInfo[] }
   'code:modelDetail': { args: [projectId: string, modelClass: string]; result: ModelDetailResult }
+  'artisan:history': { args: [projectId: string]; result: ArtisanHistoryEntry[] }
+  'projects:open': { args: [projectId: string, target: OpenTarget]; result: DevActionResult }
+  'settings:getEditor': { args: []; result: EditorChoice }
+  'settings:setEditor': { args: [editor: EditorChoice]; result: EditorChoice }
 }
 
 export type IpcChannel = keyof IpcChannels
@@ -351,6 +366,10 @@ export interface LaravelCommanderApi {
   listRoutes(projectId: string): Promise<RoutesResult>
   listModels(projectId: string): Promise<ModelInfo[]>
   getModelDetail(projectId: string, modelClass: string): Promise<ModelDetailResult>
+  artisanHistory(projectId: string): Promise<ArtisanHistoryEntry[]>
+  openProject(projectId: string, target: OpenTarget): Promise<DevActionResult>
+  getEditor(): Promise<EditorChoice>
+  setEditor(editor: EditorChoice): Promise<EditorChoice>
   /** Subscribe to live command output. Returns an unsubscribe function. */
   onCommandOutput(callback: (event: CommandOutputEvent) => void): () => void
   onCommandExit(callback: (event: CommandExitEvent) => void): () => void

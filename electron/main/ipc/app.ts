@@ -1,5 +1,6 @@
 import { app } from 'electron'
 import { handle } from './registry'
+import { getEditor, setEditor } from '../services/editor'
 
 export function registerAppIpc(): void {
   handle('app:ping', (_event, message) => ({
@@ -9,4 +10,7 @@ export function registerAppIpc(): void {
     nodeVersion: process.versions.node,
     platform: process.platform
   }))
+
+  handle('settings:getEditor', () => getEditor())
+  handle('settings:setEditor', (_event, editor) => setEditor(editor))
 }

@@ -77,7 +77,7 @@ app.whenReady().then(() => {
   })
 
   registerAppIpc()
-  registerProjectsIpc(projectManager)
+  registerProjectsIpc(projectManager, phpEnvironment, devProcessManager)
   registerPhpIpc(phpEnvironment)
   registerArtisanIpc(projectManager, phpEnvironment, commandRunner)
   registerEnvIpc(projectManager, envFileService)

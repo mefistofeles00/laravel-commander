@@ -161,6 +161,12 @@ export class DevProcessManager {
     return any
   }
 
+  /** URL of a running process (e.g. serve), if its port has been captured. */
+  processUrl(projectId: string, role: DevRole): string | undefined {
+    const managed = this.byProject.get(projectId)?.get(role)
+    return managed?.status === 'running' ? managed.url : undefined
+  }
+
   runningProjects(): string[] {
     return [...this.byProject.entries()]
       .filter(([, processes]) => [...processes.values()].some((p) => p.status === 'running'))

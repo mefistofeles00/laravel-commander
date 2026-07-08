@@ -25,6 +25,13 @@ its `.env`, and run artisan commands — without touching the terminal.
   composer constraint, empty APP_KEY, debug-on-in-production, stale config
   cache, broken storage link, missing SQLite file, pending migrations, …)
   with one-click fixes that never run without your say-so
+- **Logs** — live-tailing log viewer with duplicate collapsing, level filters,
+  collapsible stack traces and open-at-line in your editor; failed queue jobs
+  with one-click retry/forget
+- **Code X-ray** — searchable route table (middleware, color-coded methods,
+  jump to controller) and a model explorer with attributes and relations
+- **Glue** — make: generator with file previews, re-runnable artisan history,
+  open the project in your editor, terminal or browser
 
 | Projects                                   | .env editor                                     | Artisan panel                            |
 | ------------------------------------------ | ----------------------------------------------- | ---------------------------------------- |

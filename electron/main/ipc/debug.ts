@@ -4,7 +4,7 @@ import { promisify } from 'util'
 import { existsSync } from 'fs'
 import { join, normalize, sep } from 'path'
 import { handle } from './registry'
-import { store } from '../services/storage'
+import { editorUrl } from '../services/editor'
 import type { LogService } from '../services/LogService'
 import type { PhpEnvironment } from '../services/PhpEnvironment'
 import type { ProjectManager } from '../services/ProjectManager'
@@ -29,19 +29,6 @@ function parseFailedJobs(output: string): FailedJob[] {
     jobs.push({ uuid: match[0], description })
   }
   return jobs
-}
-
-function editorUrl(file: string, line: number | undefined): string {
-  const editor = store.get('editor') ?? 'vscode'
-  const suffix = line ? `:${line}` : ''
-  switch (editor) {
-    case 'phpstorm':
-      return `phpstorm://open?file=${encodeURIComponent(file)}${line ? `&line=${line}` : ''}`
-    case 'cursor':
-      return `cursor://file/${file}${suffix}`
-    default:
-      return `vscode://file/${file}${suffix}`
-  }
 }
 
 export function registerDebugIpc(
