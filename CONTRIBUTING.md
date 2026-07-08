@@ -8,7 +8,7 @@ You need Node.js 22+ and [pnpm](https://pnpm.io). PHP is only needed to
 exercise the artisan features against a real Laravel project.
 
 ```bash
-git clone https://github.com/OWNER/laravel-commander.git
+git clone https://github.com/mefistofeles00/laravel-commander.git
 cd laravel-commander
 pnpm install
 pnpm dev
