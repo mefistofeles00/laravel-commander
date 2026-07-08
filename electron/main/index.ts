@@ -11,6 +11,7 @@ import { registerDoctorIpc } from './ipc/doctor'
 import { registerDevIpc } from './ipc/dev'
 import { registerDebugIpc } from './ipc/debug'
 import { registerCodeIpc } from './ipc/code'
+import { registerMaintenanceIpc } from './ipc/maintenance'
 import { ProjectManager } from './services/ProjectManager'
 import { PhpEnvironment } from './services/PhpEnvironment'
 import { CommandRunner } from './services/CommandRunner'
@@ -85,6 +86,7 @@ app.whenReady().then(() => {
   registerDevIpc(projectManager, devProcessManager)
   registerDebugIpc(projectManager, phpEnvironment, logService)
   registerCodeIpc(projectManager, phpEnvironment)
+  registerMaintenanceIpc(projectManager, phpEnvironment)
 
   createWindow()
 

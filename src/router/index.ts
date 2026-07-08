@@ -38,6 +38,11 @@ export const router = createRouter({
       component: () => import('@/pages/CodePanel.vue')
     },
     {
+      path: '/projects/:id/maintenance',
+      name: 'maintenance-panel',
+      component: () => import('@/pages/MaintenancePanel.vue')
+    },
+    {
       path: '/projects/:id/doctor',
       name: 'doctor-panel',
       component: () => import('@/pages/DoctorPanel.vue')

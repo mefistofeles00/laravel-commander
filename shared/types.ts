@@ -236,6 +236,38 @@ export interface ModelDetail {
 
 export type ModelDetailResult = { ok: true; detail: ModelDetail } | { ok: false; message: string }
 
+// ---- Maintenance (migrations, packages, schedule) ----
+
+export interface MigrationInfo {
+  name: string
+  batch: number | null
+  status: 'ran' | 'pending'
+}
+
+export type MigrationsResult =
+  { ok: true; migrations: MigrationInfo[] } | { ok: false; message: string; raw?: string }
+
+export interface OutdatedPackage {
+  name: string
+  current: string
+  latest: string
+  /** major = crosses a semver boundary; minor = semver-safe update. */
+  severity: 'major' | 'minor' | 'unknown'
+  description?: string
+}
+
+export type OutdatedResult =
+  { ok: true; packages: OutdatedPackage[] } | { ok: false; message: string }
+
+export interface ScheduledTask {
+  expression: string
+  command: string
+  nextDue: string | null
+}
+
+export type ScheduleResult =
+  { ok: true; tasks: ScheduledTask[] } | { ok: false; message: string; raw?: string }
+
 // ---- Project Doctor ----
 
 export type DoctorSeverity = 'error' | 'warning' | 'info'
@@ -309,6 +341,11 @@ export interface IpcChannels {
   'projects:open': { args: [projectId: string, target: OpenTarget]; result: DevActionResult }
   'settings:getEditor': { args: []; result: EditorChoice }
   'settings:setEditor': { args: [editor: EditorChoice]; result: EditorChoice }
+  'maint:migrations': { args: [projectId: string]; result: MigrationsResult }
+  'maint:migrate': { args: [projectId: string]; result: ExecResult }
+  'maint:rollback': { args: [projectId: string]; result: ExecResult }
+  'maint:outdated': { args: [projectId: string]; result: OutdatedResult }
+  'maint:schedule': { args: [projectId: string]; result: ScheduleResult }
 }
 
 export type IpcChannel = keyof IpcChannels
@@ -370,6 +407,11 @@ export interface LaravelCommanderApi {
   openProject(projectId: string, target: OpenTarget): Promise<DevActionResult>
   getEditor(): Promise<EditorChoice>
   setEditor(editor: EditorChoice): Promise<EditorChoice>
+  listMigrations(projectId: string): Promise<MigrationsResult>
+  runMigrations(projectId: string): Promise<ExecResult>
+  rollbackMigrations(projectId: string): Promise<ExecResult>
+  listOutdatedPackages(projectId: string): Promise<OutdatedResult>
+  listScheduledTasks(projectId: string): Promise<ScheduleResult>
   /** Subscribe to live command output. Returns an unsubscribe function. */
   onCommandOutput(callback: (event: CommandOutputEvent) => void): () => void
   onCommandExit(callback: (event: CommandExitEvent) => void): () => void
