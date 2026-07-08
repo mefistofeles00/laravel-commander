@@ -61,6 +61,12 @@ export interface EnvFileState {
   extraKeys: string[]
 }
 
+/** A named .env snapshot, stored outside the project (in app data). */
+export interface EnvProfile {
+  name: string
+  savedAt: number
+}
+
 // ---- Artisan ----
 
 export interface ArtisanArgument {
@@ -309,6 +315,10 @@ export interface IpcChannels {
     result: EnvFileState
   }
   'env:init': { args: [projectId: string]; result: EnvFileState }
+  'env:profiles': { args: [projectId: string]; result: EnvProfile[] }
+  'env:saveProfile': { args: [projectId: string, name: string]; result: EnvProfile[] }
+  'env:applyProfile': { args: [projectId: string, name: string]; result: EnvFileState }
+  'env:deleteProfile': { args: [projectId: string, name: string]; result: EnvProfile[] }
   'artisan:list': { args: [projectId: string]; result: ArtisanCatalogResult }
   'artisan:run': {
     args: [projectId: string, command: string, cliArgs: string[], options: ArtisanOptionValues]
@@ -376,6 +386,10 @@ export interface LaravelCommanderApi {
   readEnv(projectId: string): Promise<EnvFileState>
   writeEnv(projectId: string, changes: Record<string, string>): Promise<EnvFileState>
   initEnv(projectId: string): Promise<EnvFileState>
+  listEnvProfiles(projectId: string): Promise<EnvProfile[]>
+  saveEnvProfile(projectId: string, name: string): Promise<EnvProfile[]>
+  applyEnvProfile(projectId: string, name: string): Promise<EnvFileState>
+  deleteEnvProfile(projectId: string, name: string): Promise<EnvProfile[]>
   listArtisanCommands(projectId: string): Promise<ArtisanCatalogResult>
   runArtisan(
     projectId: string,

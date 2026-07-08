@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import ProjectHeader from '@/components/ProjectHeader.vue'
 import EnvRow from '@/components/EnvRow.vue'
 import { useProjectsStore } from '@/stores/projects'
-import type { EnvFileState } from '@shared/types'
+import type { EnvFileState, EnvProfile } from '@shared/types'
 
 const route = useRoute()
 const projects = useProjectsStore()
@@ -19,6 +21,12 @@ const drafts = ref<Record<string, string>>({})
 const addedKeys = ref<string[]>([])
 const saving = ref(false)
 const savedFlash = ref(false)
+
+const profiles = ref<EnvProfile[]>([])
+const newProfileName = ref('')
+const armApply = ref<string | null>(null)
+const armDelete = ref<string | null>(null)
+const profileFlash = ref<string | null>(null)
 
 const rows = computed(() => {
   if (!state.value) return []
@@ -97,7 +105,63 @@ async function createFromExample(): Promise<void> {
   }
 }
 
-onMounted(load)
+async function loadProfiles(): Promise<void> {
+  if (!project.value) return
+  profiles.value = await window.api.listEnvProfiles(project.value.id)
+}
+
+function flashProfile(message: string): void {
+  profileFlash.value = message
+  setTimeout(() => (profileFlash.value = null), 2500)
+}
+
+async function saveProfile(): Promise<void> {
+  const name = newProfileName.value.trim()
+  if (!project.value || !name) return
+  loadError.value = null
+  try {
+    profiles.value = await window.api.saveEnvProfile(project.value.id, name)
+    newProfileName.value = ''
+    flashProfile(`Saved current .env as "${name}"`)
+  } catch (error) {
+    loadError.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+async function applyProfile(name: string): Promise<void> {
+  if (!project.value) return
+  if (armApply.value !== name) {
+    armApply.value = name
+    setTimeout(() => (armApply.value = null), 3000)
+    return
+  }
+  armApply.value = null
+  loadError.value = null
+  try {
+    state.value = await window.api.applyEnvProfile(project.value.id, name)
+    drafts.value = {}
+    addedKeys.value = []
+    flashProfile(`Applied "${name}" — .env replaced`)
+  } catch (error) {
+    loadError.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+async function deleteProfile(name: string): Promise<void> {
+  if (!project.value) return
+  if (armDelete.value !== name) {
+    armDelete.value = name
+    setTimeout(() => (armDelete.value = null), 3000)
+    return
+  }
+  armDelete.value = null
+  profiles.value = await window.api.deleteEnvProfile(project.value.id, name)
+}
+
+onMounted(() => {
+  load()
+  loadProfiles()
+})
 </script>
 
 <template>
@@ -128,6 +192,53 @@ onMounted(load)
       </div>
 
       <template v-else>
+        <!-- Profiles: named .env snapshots stored in app data -->
+        <div class="mt-6 flex flex-wrap items-center gap-2">
+          <span class="text-xs text-muted-foreground">Profiles:</span>
+          <template v-for="profile in profiles" :key="profile.name">
+            <span class="inline-flex items-center overflow-hidden rounded-md border">
+              <button
+                class="px-2.5 py-1 font-mono text-xs transition-colors hover:bg-white/4"
+                :class="armApply === profile.name ? 'text-warning' : ''"
+                :title="`Replace .env with the “${profile.name}” snapshot`"
+                @click="applyProfile(profile.name)"
+              >
+                {{ armApply === profile.name ? 'Apply? This replaces .env' : profile.name }}
+              </button>
+              <button
+                class="border-l px-1.5 py-1 text-muted-foreground transition-colors hover:text-destructive"
+                :class="armDelete === profile.name ? 'text-destructive' : ''"
+                :title="
+                  armDelete === profile.name
+                    ? 'Click again to delete'
+                    : `Delete profile ${profile.name}`
+                "
+                @click="deleteProfile(profile.name)"
+              >
+                <X class="size-3" />
+              </button>
+            </span>
+          </template>
+          <div class="ml-auto flex items-center gap-2">
+            <Input
+              v-model="newProfileName"
+              placeholder="local, staging…"
+              class="h-7 w-32 font-mono !text-xs"
+              @keydown.enter="saveProfile"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              class="h-7 text-xs"
+              :disabled="!newProfileName.trim()"
+              @click="saveProfile"
+            >
+              Save current as profile
+            </Button>
+          </div>
+        </div>
+        <p v-if="profileFlash" class="mt-2 text-xs text-success">{{ profileFlash }}</p>
+
         <div
           v-if="missingKeys.length"
           class="mt-6 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3"

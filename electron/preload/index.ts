@@ -35,6 +35,10 @@ const api: LaravelCommanderApi = {
   readEnv: (projectId) => invoke('env:read', projectId),
   writeEnv: (projectId, changes) => invoke('env:write', projectId, changes),
   initEnv: (projectId) => invoke('env:init', projectId),
+  listEnvProfiles: (projectId) => invoke('env:profiles', projectId),
+  saveEnvProfile: (projectId, name) => invoke('env:saveProfile', projectId, name),
+  applyEnvProfile: (projectId, name) => invoke('env:applyProfile', projectId, name),
+  deleteEnvProfile: (projectId, name) => invoke('env:deleteProfile', projectId, name),
   listArtisanCommands: (projectId) => invoke('artisan:list', projectId),
   runArtisan: (projectId, command, cliArgs, options) =>
     invoke('artisan:run', projectId, command, cliArgs, options),
