@@ -8,11 +8,13 @@ import { registerPhpIpc } from './ipc/php'
 import { registerArtisanIpc } from './ipc/artisan'
 import { registerEnvIpc } from './ipc/env'
 import { registerDoctorIpc } from './ipc/doctor'
+import { registerDevIpc } from './ipc/dev'
 import { ProjectManager } from './services/ProjectManager'
 import { PhpEnvironment } from './services/PhpEnvironment'
 import { CommandRunner } from './services/CommandRunner'
 import { EnvFileService } from './services/EnvFileService'
 import { ProjectDoctor } from './services/ProjectDoctor'
+import { DevProcessManager } from './services/DevProcessManager'
 import { store } from './services/storage'
 
 const projectManager = new ProjectManager()
@@ -20,6 +22,7 @@ const phpEnvironment = new PhpEnvironment(() => store.get('phpPathOverride'))
 const commandRunner = new CommandRunner()
 const envFileService = new EnvFileService()
 const projectDoctor = new ProjectDoctor(phpEnvironment, envFileService)
+const devProcessManager = new DevProcessManager(phpEnvironment, commandRunner)
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -75,6 +78,7 @@ app.whenReady().then(() => {
   registerArtisanIpc(projectManager, phpEnvironment, commandRunner)
   registerEnvIpc(projectManager, envFileService)
   registerDoctorIpc(projectManager, projectDoctor)
+  registerDevIpc(projectManager, devProcessManager)
 
   createWindow()
 

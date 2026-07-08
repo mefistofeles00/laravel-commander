@@ -2,13 +2,16 @@
 import { onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useProjectsStore } from '@/stores/projects'
+import { useDevStore } from '@/stores/dev'
 
 const app = useAppStore()
 const projects = useProjectsStore()
+const dev = useDevStore()
 
 onMounted(() => {
   app.init()
   projects.refresh()
+  dev.init()
 })
 </script>
 
@@ -46,6 +49,11 @@ onMounted(() => {
             >
               <span class="text-primary/70">❯</span>
               <span class="truncate">{{ project.name }}</span>
+              <span
+                v-if="dev.isRunning(project.id)"
+                class="ml-auto size-1.5 shrink-0 animate-pulse rounded-full bg-success"
+                title="Dev processes running"
+              />
             </RouterLink>
           </li>
         </ul>

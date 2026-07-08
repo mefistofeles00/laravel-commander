@@ -5,10 +5,13 @@
 An open-source desktop app for managing Laravel projects: add a project, edit
 its `.env`, and run artisan commands — without touching the terminal.
 
-![Projects](docs/screenshots/projects.png)
+![Dev processes](docs/screenshots/dev-panel.png)
 
 ## Features
 
+- **Dev processes** — start your whole dev session with one click: `serve`,
+  Vite, queue worker and Reverb run as supervised processes with live output,
+  captured ports, crash detection and a guarantee that nothing outlives the app
 - **Projects** — add a Laravel folder (validated: `artisan` + `laravel/framework`),
   see its Laravel version, PHP requirement and packages at a glance
 - **.env editor** — comments, blank lines, key order and quote style survive
@@ -23,9 +26,9 @@ its `.env`, and run artisan commands — without touching the terminal.
   cache, broken storage link, missing SQLite file, pending migrations, …)
   with one-click fixes that never run without your say-so
 
-| .env editor                                     | Artisan panel                            |
-| ----------------------------------------------- | ---------------------------------------- |
-| ![.env editor](docs/screenshots/env-editor.png) | ![Artisan](docs/screenshots/artisan.png) |
+| Projects                                   | .env editor                                     | Artisan panel                            |
+| ------------------------------------------ | ----------------------------------------------- | ---------------------------------------- |
+| ![Projects](docs/screenshots/projects.png) | ![.env editor](docs/screenshots/env-editor.png) | ![Artisan](docs/screenshots/artisan.png) |
 
 Built with Electron, Vue 3, TypeScript, Tailwind CSS and shadcn-vue.
 

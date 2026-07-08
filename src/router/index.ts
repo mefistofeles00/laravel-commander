@@ -13,6 +13,11 @@ export const router = createRouter({
       component: () => import('@/pages/ProjectDetail.vue')
     },
     {
+      path: '/projects/:id/dev',
+      name: 'dev-panel',
+      component: () => import('@/pages/DevPanel.vue')
+    },
+    {
       path: '/projects/:id/env',
       name: 'env-editor',
       component: () => import('@/pages/EnvEditor.vue')

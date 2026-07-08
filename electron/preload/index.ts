@@ -41,8 +41,15 @@ const api: LaravelCommanderApi = {
   cancelArtisan: (runId) => invoke('artisan:cancel', runId),
   runDoctor: (projectId) => invoke('doctor:run', projectId),
   fixDoctorFinding: (projectId, findingId) => invoke('doctor:fix', projectId, findingId),
+  listDevProcesses: (projectId) => invoke('dev:list', projectId),
+  startDevProcess: (projectId, role) => invoke('dev:start', projectId, role),
+  stopDevProcess: (projectId, role) => invoke('dev:stop', projectId, role),
+  startAllDevProcesses: (projectId) => invoke('dev:startAll', projectId),
+  stopAllDevProcesses: (projectId) => invoke('dev:stopAll', projectId),
+  devRunningProjects: () => invoke('dev:runningProjects'),
   onCommandOutput: (callback) => subscribe('command:output', callback),
-  onCommandExit: (callback) => subscribe('command:exit', callback)
+  onCommandExit: (callback) => subscribe('command:exit', callback),
+  onDevStatus: (callback) => subscribe('dev:status', callback)
 }
 
 contextBridge.exposeInMainWorld('api', api)

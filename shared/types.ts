@@ -102,6 +102,39 @@ export interface CommandExitEvent {
   signal: string | null
 }
 
+// ---- Dev process manager ----
+
+export type DevRole = 'serve' | 'vite' | 'queue' | 'reverb'
+
+export type DevProcessStatus = 'stopped' | 'running' | 'crashed'
+
+export interface DevProcessInfo {
+  role: DevRole
+  status: DevProcessStatus
+  /** Whether this role can run in this project (e.g. vite needs a dev script). */
+  available: boolean
+  /** Why it's unavailable, or an advisory note (e.g. Herd already serves this app). */
+  hint?: string
+  /** Current run id while running — live output arrives on command:output with this id. */
+  runId?: string
+  port?: number
+  url?: string
+  startedAt?: number
+  exitCode?: number | null
+  /** Recent output (ring buffer), only included in dev:list responses. */
+  buffer?: string
+}
+
+export interface DevActionResult {
+  ok: boolean
+  message?: string
+}
+
+export interface DevStatusEvent {
+  projectId: string
+  process: DevProcessInfo
+}
+
 // ---- Project Doctor ----
 
 export type DoctorSeverity = 'error' | 'warning' | 'info'
@@ -151,6 +184,12 @@ export interface IpcChannels {
   'artisan:cancel': { args: [runId: string]; result: boolean }
   'doctor:run': { args: [projectId: string]; result: DoctorReport }
   'doctor:fix': { args: [projectId: string, findingId: string]; result: DoctorFixResult }
+  'dev:list': { args: [projectId: string]; result: DevProcessInfo[] }
+  'dev:start': { args: [projectId: string, role: DevRole]; result: DevActionResult }
+  'dev:stop': { args: [projectId: string, role: DevRole]; result: boolean }
+  'dev:startAll': { args: [projectId: string]; result: DevActionResult }
+  'dev:stopAll': { args: [projectId: string]; result: boolean }
+  'dev:runningProjects': { args: []; result: string[] }
 }
 
 export type IpcChannel = keyof IpcChannels
@@ -162,6 +201,7 @@ export type IpcResult<C extends IpcChannel> = IpcChannels[C]['result']
 export interface IpcEvents {
   'command:output': CommandOutputEvent
   'command:exit': CommandExitEvent
+  'dev:status': DevStatusEvent
 }
 
 export type IpcEvent = keyof IpcEvents
@@ -189,7 +229,14 @@ export interface LaravelCommanderApi {
   cancelArtisan(runId: string): Promise<boolean>
   runDoctor(projectId: string): Promise<DoctorReport>
   fixDoctorFinding(projectId: string, findingId: string): Promise<DoctorFixResult>
+  listDevProcesses(projectId: string): Promise<DevProcessInfo[]>
+  startDevProcess(projectId: string, role: DevRole): Promise<DevActionResult>
+  stopDevProcess(projectId: string, role: DevRole): Promise<boolean>
+  startAllDevProcesses(projectId: string): Promise<DevActionResult>
+  stopAllDevProcesses(projectId: string): Promise<boolean>
+  devRunningProjects(): Promise<string[]>
   /** Subscribe to live command output. Returns an unsubscribe function. */
   onCommandOutput(callback: (event: CommandOutputEvent) => void): () => void
   onCommandExit(callback: (event: CommandExitEvent) => void): () => void
+  onDevStatus(callback: (event: DevStatusEvent) => void): () => void
 }
