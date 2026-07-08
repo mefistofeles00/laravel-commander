@@ -28,6 +28,11 @@ export const router = createRouter({
       component: () => import('@/pages/ArtisanPanel.vue')
     },
     {
+      path: '/projects/:id/logs',
+      name: 'logs-panel',
+      component: () => import('@/pages/LogsPanel.vue')
+    },
+    {
       path: '/projects/:id/doctor',
       name: 'doctor-panel',
       component: () => import('@/pages/DoctorPanel.vue')

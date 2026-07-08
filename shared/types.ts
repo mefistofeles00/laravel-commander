@@ -135,6 +135,52 @@ export interface DevStatusEvent {
   process: DevProcessInfo
 }
 
+// ---- Logs & failed jobs ----
+
+export interface LogFileInfo {
+  name: string
+  size: number
+  modifiedAt: number
+}
+
+export interface LogEntry {
+  timestamp: string
+  env: string
+  level: string
+  message: string
+  stack: string[]
+  /** Consecutive identical entries collapsed into one. */
+  count: number
+  /** First frame inside the project (app/, routes/, …) — openable in an editor. */
+  appFrame?: { file: string; line: number }
+}
+
+export interface LogReadResult {
+  file: string
+  entries: LogEntry[]
+  /** True when only the tail of a large file was read. */
+  truncated: boolean
+  sizeBytes: number
+}
+
+export interface FailedJob {
+  uuid: string
+  description: string
+}
+
+export type FailedJobsResult =
+  { ok: true; jobs: FailedJob[] } | { ok: false; message: string; raw?: string }
+
+export interface ExecResult {
+  ok: boolean
+  output: string
+}
+
+export interface LogAppendedEvent {
+  projectId: string
+  file: string
+}
+
 // ---- Project Doctor ----
 
 export type DoctorSeverity = 'error' | 'warning' | 'info'
@@ -190,6 +236,17 @@ export interface IpcChannels {
   'dev:startAll': { args: [projectId: string]; result: DevActionResult }
   'dev:stopAll': { args: [projectId: string]; result: boolean }
   'dev:runningProjects': { args: []; result: string[] }
+  'log:files': { args: [projectId: string]; result: LogFileInfo[] }
+  'log:read': { args: [projectId: string, file: string]; result: LogReadResult }
+  'log:clear': { args: [projectId: string, file: string]; result: LogReadResult }
+  'jobs:failed': { args: [projectId: string]; result: FailedJobsResult }
+  'jobs:retry': { args: [projectId: string, uuid: string]; result: ExecResult }
+  'jobs:forget': { args: [projectId: string, uuid: string]; result: ExecResult }
+  'jobs:flush': { args: [projectId: string]; result: ExecResult }
+  'projects:openFile': {
+    args: [projectId: string, relativeFile: string, line?: number]
+    result: boolean
+  }
 }
 
 export type IpcChannel = keyof IpcChannels
@@ -202,6 +259,7 @@ export interface IpcEvents {
   'command:output': CommandOutputEvent
   'command:exit': CommandExitEvent
   'dev:status': DevStatusEvent
+  'log:appended': LogAppendedEvent
 }
 
 export type IpcEvent = keyof IpcEvents
@@ -235,8 +293,17 @@ export interface LaravelCommanderApi {
   startAllDevProcesses(projectId: string): Promise<DevActionResult>
   stopAllDevProcesses(projectId: string): Promise<boolean>
   devRunningProjects(): Promise<string[]>
+  listLogFiles(projectId: string): Promise<LogFileInfo[]>
+  readLog(projectId: string, file: string): Promise<LogReadResult>
+  clearLog(projectId: string, file: string): Promise<LogReadResult>
+  listFailedJobs(projectId: string): Promise<FailedJobsResult>
+  retryFailedJob(projectId: string, uuid: string): Promise<ExecResult>
+  forgetFailedJob(projectId: string, uuid: string): Promise<ExecResult>
+  flushFailedJobs(projectId: string): Promise<ExecResult>
+  openProjectFile(projectId: string, relativeFile: string, line?: number): Promise<boolean>
   /** Subscribe to live command output. Returns an unsubscribe function. */
   onCommandOutput(callback: (event: CommandOutputEvent) => void): () => void
   onCommandExit(callback: (event: CommandExitEvent) => void): () => void
   onDevStatus(callback: (event: DevStatusEvent) => void): () => void
+  onLogAppended(callback: (event: LogAppendedEvent) => void): () => void
 }

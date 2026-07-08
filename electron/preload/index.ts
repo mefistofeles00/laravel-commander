@@ -47,9 +47,19 @@ const api: LaravelCommanderApi = {
   startAllDevProcesses: (projectId) => invoke('dev:startAll', projectId),
   stopAllDevProcesses: (projectId) => invoke('dev:stopAll', projectId),
   devRunningProjects: () => invoke('dev:runningProjects'),
+  listLogFiles: (projectId) => invoke('log:files', projectId),
+  readLog: (projectId, file) => invoke('log:read', projectId, file),
+  clearLog: (projectId, file) => invoke('log:clear', projectId, file),
+  listFailedJobs: (projectId) => invoke('jobs:failed', projectId),
+  retryFailedJob: (projectId, uuid) => invoke('jobs:retry', projectId, uuid),
+  forgetFailedJob: (projectId, uuid) => invoke('jobs:forget', projectId, uuid),
+  flushFailedJobs: (projectId) => invoke('jobs:flush', projectId),
+  openProjectFile: (projectId, relativeFile, line) =>
+    invoke('projects:openFile', projectId, relativeFile, line),
   onCommandOutput: (callback) => subscribe('command:output', callback),
   onCommandExit: (callback) => subscribe('command:exit', callback),
-  onDevStatus: (callback) => subscribe('dev:status', callback)
+  onDevStatus: (callback) => subscribe('dev:status', callback),
+  onLogAppended: (callback) => subscribe('log:appended', callback)
 }
 
 contextBridge.exposeInMainWorld('api', api)

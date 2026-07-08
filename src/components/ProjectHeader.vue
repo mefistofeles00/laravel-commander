@@ -11,6 +11,7 @@ const tabs = computed(() => [
   { label: 'Dev', to: `/projects/${props.project.id}/dev`, mono: false },
   { label: '.env', to: `/projects/${props.project.id}/env`, mono: true },
   { label: 'Artisan', to: `/projects/${props.project.id}/artisan`, mono: false },
+  { label: 'Logs', to: `/projects/${props.project.id}/logs`, mono: false },
   { label: 'Doctor', to: `/projects/${props.project.id}/doctor`, mono: false }
 ])
 
