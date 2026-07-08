@@ -32,6 +32,10 @@ its `.env`, and run artisan commands — without touching the terminal.
   jump to controller) and a model explorer with attributes and relations
 - **Glue** — make: generator with file previews, re-runnable artisan history,
   open the project in your editor, terminal or browser
+- **Maintenance** — migration status with one-click migrate/rollback,
+  composer outdated (major/minor), scheduled task list
+- **.env profiles** — snapshot and switch between local/staging value sets,
+  stored outside the project
 
 | Projects                                   | .env editor                                     | Artisan panel                            |
 | ------------------------------------------ | ----------------------------------------------- | ---------------------------------------- |
