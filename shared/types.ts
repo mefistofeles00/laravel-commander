@@ -181,6 +181,50 @@ export interface LogAppendedEvent {
   file: string
 }
 
+// ---- Code X-ray (routes & models) ----
+
+export interface RouteInfo {
+  method: string
+  uri: string
+  name: string | null
+  action: string
+  middleware: string[]
+  /** Project-relative controller file when it could be resolved via PSR-4. */
+  file?: string
+}
+
+export type RoutesResult = { ok: true; routes: RouteInfo[] } | { ok: false; message: string }
+
+export interface ModelInfo {
+  /** Fully-qualified class, e.g. "App\Models\User". */
+  class: string
+  /** Project-relative file path. */
+  file: string
+}
+
+export interface ModelAttribute {
+  name: string
+  type: string | null
+  nullable: boolean
+  fillable: boolean
+}
+
+export interface ModelRelation {
+  name: string
+  type: string
+  related: string | null
+}
+
+export interface ModelDetail {
+  class: string
+  table: string | null
+  attributes: ModelAttribute[]
+  relations: ModelRelation[]
+  observers: string[]
+}
+
+export type ModelDetailResult = { ok: true; detail: ModelDetail } | { ok: false; message: string }
+
 // ---- Project Doctor ----
 
 export type DoctorSeverity = 'error' | 'warning' | 'info'
@@ -247,6 +291,9 @@ export interface IpcChannels {
     args: [projectId: string, relativeFile: string, line?: number]
     result: boolean
   }
+  'code:routes': { args: [projectId: string]; result: RoutesResult }
+  'code:models': { args: [projectId: string]; result: ModelInfo[] }
+  'code:modelDetail': { args: [projectId: string, modelClass: string]; result: ModelDetailResult }
 }
 
 export type IpcChannel = keyof IpcChannels
@@ -301,6 +348,9 @@ export interface LaravelCommanderApi {
   forgetFailedJob(projectId: string, uuid: string): Promise<ExecResult>
   flushFailedJobs(projectId: string): Promise<ExecResult>
   openProjectFile(projectId: string, relativeFile: string, line?: number): Promise<boolean>
+  listRoutes(projectId: string): Promise<RoutesResult>
+  listModels(projectId: string): Promise<ModelInfo[]>
+  getModelDetail(projectId: string, modelClass: string): Promise<ModelDetailResult>
   /** Subscribe to live command output. Returns an unsubscribe function. */
   onCommandOutput(callback: (event: CommandOutputEvent) => void): () => void
   onCommandExit(callback: (event: CommandExitEvent) => void): () => void

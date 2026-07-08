@@ -33,6 +33,11 @@ export const router = createRouter({
       component: () => import('@/pages/LogsPanel.vue')
     },
     {
+      path: '/projects/:id/code',
+      name: 'code-panel',
+      component: () => import('@/pages/CodePanel.vue')
+    },
+    {
       path: '/projects/:id/doctor',
       name: 'doctor-panel',
       component: () => import('@/pages/DoctorPanel.vue')

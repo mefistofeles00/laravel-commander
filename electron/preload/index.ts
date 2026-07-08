@@ -56,6 +56,9 @@ const api: LaravelCommanderApi = {
   flushFailedJobs: (projectId) => invoke('jobs:flush', projectId),
   openProjectFile: (projectId, relativeFile, line) =>
     invoke('projects:openFile', projectId, relativeFile, line),
+  listRoutes: (projectId) => invoke('code:routes', projectId),
+  listModels: (projectId) => invoke('code:models', projectId),
+  getModelDetail: (projectId, modelClass) => invoke('code:modelDetail', projectId, modelClass),
   onCommandOutput: (callback) => subscribe('command:output', callback),
   onCommandExit: (callback) => subscribe('command:exit', callback),
   onDevStatus: (callback) => subscribe('dev:status', callback),
