@@ -5,7 +5,8 @@ import eslintPluginVue from 'eslint-plugin-vue'
 import vueParser from 'vue-eslint-parser'
 
 export default defineConfig(
-  { ignores: ['**/node_modules', '**/dist', '**/out'] },
+  // scripts/ holds build-time tooling (icon generation) — plain Node, not app source.
+  { ignores: ['**/node_modules', '**/dist', '**/out', 'scripts/**'] },
   tseslint.configs.recommended,
   eslintPluginVue.configs['flat/recommended'],
   {
